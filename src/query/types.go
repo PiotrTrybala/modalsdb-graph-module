@@ -78,3 +78,9 @@ type SelectQuery struct {
 	Direction DirectionType
 	NodesIds  []string
 }
+
+var ErrInvalidKeyword = errors.New("invalid keyword")
+
+const (
+	KeywordRelations = "relations"
+)

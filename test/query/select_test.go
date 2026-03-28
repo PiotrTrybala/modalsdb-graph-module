@@ -9,9 +9,9 @@ import (
 
 func TestSelectQueryParser(t *testing.T) {
 
-	selectAllRelations := "SELECT ALL RELATIONS [john, alice];"
-	selectInRelations := "SELECT IN RELATIONS [john, alice];"
-	selectOutRelations := "SELECT OUT RELATIONS [john, alice];"
+	selectAllRelations := "SELECT RELATIONS IN [john, alice];"
+	selectInRelations := "SELECT RELATIONS OUT [john, alice];"
+	selectOutRelations := "SELECT RELATIONS ALL [john, alice];"
 
 	parser := query.NewParser(nil)
 
