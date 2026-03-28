@@ -102,3 +102,8 @@ type InsertRelationQuery struct {
 	Relations []string // max two relations from->to and to->from
 	To        string
 }
+
+type CountQuery struct {
+	Direction DirectionType
+	Name      string
+}

@@ -11,7 +11,7 @@ func TestInsertQueryParser(t *testing.T) {
 
 	insertNodeQuery := "INSERT john;"
 	insertOneRelationQuery := "INSERT john->[:works_for]->google"
-	insertBidirectional := "INSERT pizza->[:has,:on_top]<-cheese"
+	insertBidirectional := "INSERT pizza<->[:has,:on_top]<->cheese"
 
 	parser := query.NewParser(nil)
 

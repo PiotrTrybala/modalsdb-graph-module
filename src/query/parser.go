@@ -54,6 +54,15 @@ func (parser *Parser) Parse(queryString string) (query *Query, err error) {
 			Data: data,
 		}, nil
 
+	case Count:
+		data, err := parser.ParseCountQuery(tokens)
+		if err != nil {
+			return nil, err
+		}
+		return &Query{
+			Type: queryType,
+			Data: data,
+		}, nil
 	default:
 		return nil, errors.ErrUnsupported
 	}
@@ -196,4 +205,24 @@ func (parser *Parser) ParserRelations(rawString string) (relations []string, err
 	}
 
 	return relations, nil
+}
+
+func (parser *Parser) ParseCountQuery(tokens []string) (query *CountQuery, err error) {
+
+	if len(tokens) != 3 {
+		return nil, errors.New("invalid count query: not enough parameters")
+	}
+
+	direction, err := ToDirectionType(tokens[1])
+	if err != nil {
+		return nil, err
+	}
+
+	name := strings.ToLower(tokens[2])
+	name = strings.TrimSpace(name)
+
+	return &CountQuery{
+		Direction: direction,
+		Name:      name,
+	}, nil
 }
