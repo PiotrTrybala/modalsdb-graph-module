@@ -51,8 +51,8 @@ type Query struct {
 type DirectionType int
 
 const (
-	DirectionOut DirectionType = iota
-	DirectionIn
+	DirectionIn DirectionType = iota
+	DirectionOut
 	DirectionAll
 	DirectionNone
 )
@@ -77,6 +77,13 @@ func ToDirectionType(direction string) (directionType DirectionType, err error) 
 type SelectQuery struct {
 	Direction DirectionType
 	NodesIds  []string
+}
+
+func (q SelectQuery) String() string {
+
+	return fmt.Sprintf(`direction = %d,nodesIds = %v
+	`, q.Direction, q.NodesIds)
+
 }
 
 var ErrInvalidKeyword = errors.New("invalid keyword")
