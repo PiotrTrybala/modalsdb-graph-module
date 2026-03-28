@@ -80,10 +80,8 @@ type SelectQuery struct {
 }
 
 func (q SelectQuery) String() string {
-
 	return fmt.Sprintf(`direction = %d,nodesIds = %v
 	`, q.Direction, q.NodesIds)
-
 }
 
 var ErrInvalidKeyword = errors.New("invalid keyword")
@@ -91,3 +89,6 @@ var ErrInvalidKeyword = errors.New("invalid keyword")
 const (
 	KeywordRelations = "relations"
 )
+
+type InsertQuery struct {
+}

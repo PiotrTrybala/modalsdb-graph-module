@@ -6,8 +6,8 @@ type Node struct {
 	Name string
 	Data map[string]string
 
-	InEdges  []*Edge
-	OutEdges []*Edge
+	In  []*Edge
+	Out []*Edge
 }
 
 type Edge struct {
@@ -16,6 +16,6 @@ type Edge struct {
 	Name string
 	Data map[string]string
 
-	InNodes  []*Node
-	OutNodes []*Node
+	Source      *Node
+	Destination *Node
 }
