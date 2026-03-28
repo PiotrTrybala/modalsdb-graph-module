@@ -52,7 +52,7 @@ func (parser *Parser) Parse(queryString string) (query *Query, err error) {
 		return &Query{
 			Type: queryType,
 			Data: data,
-		}
+		}, nil
 
 	default:
 		return nil, errors.ErrUnsupported
@@ -113,14 +113,87 @@ func (parser *Parser) ParseNodesIdsList(list string) (nodesIds []string, err err
 }
 
 func (parser *Parser) ParseInsertQuery(tokens []string) (data any, err error) {
-	return nil, nil
-
+	if len(tokens) == 2 {
+		return parser.ParseInsertNodeQuery(tokens)
+	}
+	return parser.ParseInsertRelationQuery(tokens)
 }
 
 func (parser *Parser) ParseInsertNodeQuery(tokens []string) (query *InsertNodeQuery, err error) {
-	return query, nil
+
+	name := strings.TrimSpace(tokens[1])
+	cleaned := strings.ToLower(name)
+
+	return &InsertNodeQuery{
+		Name: cleaned,
+	}, nil
 }
 
 func (parser *Parser) ParseInsertRelationQuery(tokens []string) (query *InsertRelationQuery, err error) {
-	return query, nil
+
+	relationKeyword := strings.TrimSpace(tokens[1])
+	if relationKeyword != KeywordRelation {
+		return nil, fmt.Errorf("%s: %s", ErrInvalidKeyword, relationKeyword)
+	}
+
+	relation := strings.TrimSpace(tokens[2])
+
+	hasRelationship := strings.Contains(relation, KeywordRelationship)
+	hasBidirectionalRelationship := strings.Contains(relation, KeywordBidirectionalRelationship)
+
+	components := []string{}
+	if hasBidirectionalRelationship {
+		components = strings.Split(relation, KeywordBidirectionalRelationship)
+	} else if hasRelationship {
+		components = strings.Split(relation, KeywordRelationship)
+	} else if hasBidirectionalRelationship && hasRelationship {
+		return nil, errors.New("insert relation query can only have one type of relation")
+	} else {
+		return nil, errors.New("none of relationship operators were found")
+	}
+
+	if len(components) > 3 {
+		return nil, errors.New("invalid relationship definition")
+	}
+
+	from := strings.ToLower(components[0])
+	relations, err := parser.ParserRelations(components[1])
+	if err != nil {
+		return nil, err
+	}
+	to := strings.ToLower(components[2])
+
+	return &InsertRelationQuery{
+		From:      from,
+		Relations: relations,
+		To:        to,
+	}, nil
+}
+
+func (parser *Parser) ParserRelations(rawString string) (relations []string, err error) {
+
+	if rawString[0] != '[' {
+		return nil, errors.New("invalid opening of relationship rule")
+	}
+
+	if rawString[len(rawString)-2] != ']' {
+		return nil, errors.New("invalid closing of relationship rule")
+	}
+
+	if rawString[len(rawString)-1] != ';' {
+		return nil, errors.New("invalid termination character")
+	}
+
+	cleaned := strings.Trim(rawString, "[];")
+	cleaned = strings.ToLower(cleaned)
+	names := strings.Split(cleaned, ",")
+	if len(names) > 2 {
+		return nil, errors.New("invalid number of relationships specified")
+	}
+
+	for _, name := range names {
+		relations = append(relations, strings.Trim(name, ":"))
+	}
+
+	return relations, nil
 }

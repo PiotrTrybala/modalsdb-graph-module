@@ -87,7 +87,10 @@ func (q SelectQuery) String() string {
 var ErrInvalidKeyword = errors.New("invalid keyword")
 
 const (
-	KeywordRelations = "relations"
+	KeywordRelations                 = "relations"
+	KeywordRelation                  = "relation"
+	KeywordRelationship              = "->"
+	KeywordBidirectionalRelationship = "<->"
 )
 
 type InsertNodeQuery struct {
