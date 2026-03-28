@@ -91,6 +91,9 @@ const (
 	KeywordRelation                  = "relation"
 	KeywordRelationship              = "->"
 	KeywordBidirectionalRelationship = "<->"
+	KeywordBetween                   = "between"
+	KeywordAnd                       = "and"
+	KeywordHasRelations              = "has"
 )
 
 type InsertNodeQuery struct {
@@ -106,4 +109,19 @@ type InsertRelationQuery struct {
 type CountQuery struct {
 	Direction DirectionType
 	Name      string
+}
+
+type CheckAction int
+
+const (
+	CheckActionAnd CheckAction = iota
+	CheckActionBetween
+	CheckActionNone
+)
+
+type CheckQuery struct {
+	Source       string
+	Destination  string
+	Action       CheckAction
+	HasRelations []string
 }

@@ -3,6 +3,7 @@ package query
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 )
 
@@ -20,6 +21,9 @@ func (parser *Parser) Parse(queryString string) (query *Query, err error) {
 
 	// tokenize input
 	tokens := strings.Split(queryString, " ")
+	for i := 0; i < len(tokens); i++ {
+		tokens[i] = strings.ToLower(tokens[i])
+	}
 
 	fmt.Println("tokens:", tokens)
 
@@ -59,6 +63,17 @@ func (parser *Parser) Parse(queryString string) (query *Query, err error) {
 		if err != nil {
 			return nil, err
 		}
+		return &Query{
+			Type: queryType,
+			Data: data,
+		}, nil
+
+	case Check:
+		data, err := parser.ParseCheckQuery(tokens)
+		if err != nil {
+			return nil, err
+		}
+
 		return &Query{
 			Type: queryType,
 			Data: data,
@@ -225,4 +240,54 @@ func (parser *Parser) ParseCountQuery(tokens []string) (query *CountQuery, err e
 		Direction: direction,
 		Name:      name,
 	}, nil
+}
+
+func (parser *Parser) ParseCheckQuery(tokens []string) (query *CheckQuery, err error) {
+
+	hasAnd := slices.Contains(tokens, KeywordAnd)
+	hasBetween := slices.Contains(tokens, KeywordBetween)
+
+	if hasAnd {
+		if tokens[2] != KeywordAnd {
+			return nil, errors.New("invalid query format")
+		}
+
+		source := tokens[1]
+		relations := []string{}
+		destination := tokens[3]
+
+		if len(tokens) > 4 && tokens[4] == KeywordHasRelations {
+			relations, err = parser.ParserRelations(tokens[5])
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return &CheckQuery{
+			Destination:  destination,
+			Source:       source,
+			Action:       CheckActionAnd,
+			HasRelations: relations,
+		}, nil
+	} else if hasBetween {
+
+		if tokens[2] != KeywordBetween {
+			return nil, errors.New("invalid query format")
+		}
+
+		source := tokens[1]
+		destination := tokens[3]
+
+		return &CheckQuery{
+			Source:       source,
+			Destination:  destination,
+			Action:       CheckActionBetween,
+			HasRelations: []string{},
+		}, nil
+
+	}
+
+	fmt.Println(tokens)
+
+	return nil, errors.New("invalid check query")
 }
