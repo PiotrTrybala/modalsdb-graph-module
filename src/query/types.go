@@ -90,5 +90,12 @@ const (
 	KeywordRelations = "relations"
 )
 
-type InsertQuery struct {
+type InsertNodeQuery struct {
+	Name string
+}
+
+type InsertRelationQuery struct {
+	From      string
+	Relations []string // max two relations from->to and to->from
+	To        string
 }

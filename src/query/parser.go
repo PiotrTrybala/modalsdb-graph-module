@@ -44,6 +44,16 @@ func (parser *Parser) Parse(queryString string) (query *Query, err error) {
 			Data: data,
 		}, nil
 
+	case Insert:
+		data, err := parser.ParseInsertQuery(tokens)
+		if err != nil {
+			return nil, err
+		}
+		return &Query{
+			Type: queryType,
+			Data: data,
+		}
+
 	default:
 		return nil, errors.ErrUnsupported
 	}
@@ -100,4 +110,17 @@ func (parser *Parser) ParseNodesIdsList(list string) (nodesIds []string, err err
 	trimmed := strings.Trim(list, "[];")
 	nodesIds = strings.Split(trimmed, ",")
 	return nodesIds, nil
+}
+
+func (parser *Parser) ParseInsertQuery(tokens []string) (data any, err error) {
+	return nil, nil
+
+}
+
+func (parser *Parser) ParseInsertNodeQuery(tokens []string) (query *InsertNodeQuery, err error) {
+	return query, nil
+}
+
+func (parser *Parser) ParseInsertRelationQuery(tokens []string) (query *InsertRelationQuery, err error) {
+	return query, nil
 }
