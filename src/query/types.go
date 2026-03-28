@@ -20,7 +20,7 @@ const (
 
 var InvalidType = errors.New("invalid query type")
 
-func FromType(_type string) (queryType QueryType, err error) {
+func ToQueryType(_type string) (queryType QueryType, err error) {
 
 	_type = strings.ToLower(_type)
 
@@ -41,4 +41,40 @@ func FromType(_type string) (queryType QueryType, err error) {
 		return None, fmt.Errorf("%s: %s", InvalidType, _type)
 	}
 
+}
+
+type Query struct {
+	Type QueryType
+	Data any
+}
+
+type DirectionType int
+
+const (
+	DirectionOut DirectionType = iota
+	DirectionIn
+	DirectionAll
+	DirectionNone
+)
+
+var InvalidDirectionType = errors.New("invalid direction type")
+
+func ToDirectionType(direction string) (directionType DirectionType, err error) {
+	direction = strings.ToLower(direction)
+
+	switch direction {
+	case "in":
+		return DirectionIn, nil
+	case "out":
+		return DirectionOut, nil
+	case "all":
+		return DirectionAll, nil
+	default:
+		return DirectionNone, fmt.Errorf("%s: %s", InvalidDirectionType, direction)
+	}
+}
+
+type SelectQuery struct {
+	Direction DirectionType
+	NodesIds  []string
 }
