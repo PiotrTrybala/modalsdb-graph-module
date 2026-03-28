@@ -78,7 +78,7 @@ func (parser *Parser) ParseSelectQuery(tokens []string) (data *SelectQuery, err 
 
 	return &SelectQuery{
 		Direction: directionType,
-		NodesIds:  []string{},
+		NodesIds:  nodesIds,
 	}, nil
 }
 
