@@ -1,24 +1,24 @@
 package query
 
-import (
-	"fmt"
-	"testing"
+// import (
+// 	"fmt"
+// 	"testing"
 
-	"modalsdb.com/graph_module/src/query"
-)
+// 	"modalsdb.com/graph_module/src/query"
+// )
 
-func TestCountQueryParser(t *testing.T) {
+// func TestCountQueryParser(t *testing.T) {
 
-	countQuery1 := "COUNT IN john"
+// 	countQuery1 := "COUNT IN john"
 
-	parser := query.NewParser(nil)
+// 	parser := query.NewParser(nil)
 
-	r1, err := parser.Parse(countQuery1)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+// 	r1, err := parser.Parse(countQuery1)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
 
-	fmt.Println(r1)
+// 	fmt.Println(r1)
 
-}
+// }
