@@ -49,8 +49,8 @@ const (
 
 	KeywordRelationship = ':'
 
-	KeywordOperatorRelation   = "->"
-	KeywordOperatorBiRelation = "<->"
+	OperatorRelation   = "->"
+	OperatorBiRelation = "<->"
 
 	KeywordOpeningBracket = '['
 	KeywordClosingBracket = ']'
@@ -63,6 +63,10 @@ type Token struct {
 	StartPos int64
 }
 
+func (t *Token) String() string {
+	return fmt.Sprintf("%d: %s, start_pos = %d, end_pos = %d\n", t.Type, t.Value, t.StartPos, t.EndPos)
+}
+
 type Tokenizer struct {
 }
 
@@ -72,77 +76,236 @@ func NewTokenizer() *Tokenizer {
 
 func (t *Tokenizer) Tokenize(queryString string) (tokens []*Token, err error) {
 	tokens = make([]*Token, 0)
-
 	curToken := ""
 	inToken := false
 	startPos := 0
-	endPos := 0
-	for i, c := range queryString {
 
-		if inToken {
+	runes := []rune(queryString)
+	for i := 0; i < len(runes); i++ {
+		c := runes[i]
 
-			if c == ' ' {
-				endPos = i - 1
-				fmt.Printf("literal = %s, start_pos = %d, end_pos = %d\n", strings.TrimSpace(curToken), startPos, endPos)
-
-				inToken = false
-				curToken = ""
-				continue
-			}
-
-			if c == KeywordSeparator {
-				endPos = i - 1
-				fmt.Printf("literal = %s, start_pos = %d, end_pos = %d\n", curToken, startPos, endPos)
-				inToken = false
-				curToken = ""
-				fmt.Printf("separator = %s, start_pos = %d, end_pos = %d\n", string(c), i, i)
-				continue
-			}
-
-			if c == KeywordClosingBracket {
-				endPos = i - 1
-				fmt.Printf("literal = %s, start_pos = %d, end_pos = %d\n", curToken, startPos, endPos)
-
-				inToken = false
-				curToken = ""
-
-				fmt.Printf("closing bracket = %s, start_pos = %d, end_pos = %d\n", curToken, startPos, endPos)
-
-				continue
-			}
-
-		} else {
-
+		if !inToken {
 			if c == ' ' {
 				continue
 			}
-
-			if c == KeywordOpeningBracket {
-				fmt.Printf("bracket opening =  %s, start_pos = %d, end_pos = %d\n", string(c), i, i)
-				continue
-			}
-
-			if c == KeywordSeparator {
-				fmt.Printf("separator = %s, start_pos = %d, end_pos = %d\n", string(c), i, i)
-				continue
-			}
-
-			if c == KeywordSemicolon {
-				fmt.Printf("semicolon = %s, start_pos = %d, end_pos = %d\n", string(c), i, i)
-				continue
-			}
-
-			if c == KeywordClosingBracket {
-				fmt.Printf("bracket closing = %s, start_pos = %d, end_pos = %d\n", string(c), i, i)
-				continue
-			}
-
 			inToken = true
 			startPos = i
+			curToken = ""
 		}
 
-		curToken += string(c)
+		switch c {
+		case ' ':
+			t.addLiteralOrKeyword(&tokens, curToken, startPos, i-1)
+			inToken = false
+
+		case '-':
+			t.addLiteralOrKeyword(&tokens, curToken, startPos, i-1)
+			tokens = append(tokens, &Token{
+				Type:     TokenTypeOperator,
+				Value:    OperatorRelation,
+				StartPos: int64(i),
+				EndPos:   int64(i + 1),
+			})
+			i += 1
+			inToken = false
+
+		case '<':
+			t.addLiteralOrKeyword(&tokens, curToken, startPos, i-1)
+			tokens = append(tokens, &Token{
+				Type:     TokenTypeOperator,
+				Value:    OperatorBiRelation,
+				StartPos: int64(i),
+				EndPos:   int64(i + 2),
+			})
+			i += 2
+			inToken = false
+
+		case KeywordSeparator:
+			t.addLiteralOrKeyword(&tokens, curToken, startPos, i-1)
+			tokens = append(tokens, &Token{
+				Type:     TokenTypeSeparator,
+				Value:    string(KeywordSeparator),
+				StartPos: int64(i),
+				EndPos:   int64(i),
+			})
+			inToken = false
+
+		case KeywordOpeningBracket, KeywordClosingBracket:
+			t.addLiteralOrKeyword(&tokens, curToken, startPos, i-1)
+			tokens = append(tokens, &Token{
+				Type:     TokenTypeBracket,
+				Value:    string(c),
+				StartPos: int64(i),
+				EndPos:   int64(i),
+			})
+			inToken = false
+
+		default:
+			curToken += string(c)
+			if i == len(runes)-1 {
+				t.addLiteralOrKeyword(&tokens, curToken, startPos, i)
+			}
+		}
 	}
 
 	return tokens, nil
+}
+
+// func (t *Tokenizer) Tokenize(queryString string) (tokens []*Token, err error) {
+// 	tokens = make([]*Token, 0)
+
+// 	curToken := ""
+// 	inToken := false
+// 	startPos := 0
+// 	endPos := 0
+// 	for i, c := range queryString {
+
+// 		if inToken {
+
+// 			switch c {
+// 			case ' ':
+// 				endPos = i - 1
+
+// 				curToken = strings.TrimSpace(curToken)
+// 				tokenType := TokenTypeLiteral
+// 				if t.IsKeyword(curToken) {
+// 					tokenType = TokenTypeKeyword
+// 				}
+
+// 				tokens = append(tokens, &Token{
+// 					Type:     tokenType,
+// 					Value:    curToken,
+// 					StartPos: int64(startPos),
+// 					EndPos:   int64(endPos),
+// 				})
+// 				continue
+
+// 			case '-':
+
+// 				endPos = i - 1
+
+// 				curToken = strings.TrimSpace(curToken)
+// 				tokenType := TokenTypeLiteral
+// 				if t.IsKeyword(curToken) {
+// 					tokenType = TokenTypeKeyword
+// 				}
+
+// 				tokens = append(tokens, &Token{
+// 					Type:     tokenType,
+// 					Value:    curToken,
+// 					StartPos: int64(startPos),
+// 					EndPos:   int64(endPos),
+// 				})
+
+// 				curToken = ""
+// 				inToken = false
+
+// 				// TODO: Add check if relation operation is defined correctly
+
+// 				tokens = append(tokens, &Token{
+// 					Type:     TokenTypeOperator,
+// 					Value:    OperatorRelation,
+// 					StartPos: int64(i),
+// 					EndPos:   int64(i + 1),
+// 				})
+
+// 				i += 2
+
+// 				continue
+
+// 			case '<':
+
+// 				endPos = i - 1
+
+// 				curToken = strings.TrimSpace(curToken)
+// 				tokenType := TokenTypeLiteral
+// 				if t.IsKeyword(curToken) {
+// 					tokenType = TokenTypeKeyword
+// 				}
+
+// 				tokens = append(tokens, &Token{
+// 					Type:     tokenType,
+// 					Value:    curToken,
+// 					StartPos: int64(startPos),
+// 					EndPos:   int64(endPos),
+// 				})
+
+// 				curToken = ""
+// 				inToken = false
+
+// 				tokens = append(tokens, &Token{
+// 					Type:     TokenTypeOperator,
+// 					Value:    OperatorBiRelation,
+// 					EndPos:   int64(i + 2),
+// 					StartPos: int64(i),
+// 				})
+
+// 				i += 3
+
+// 				continue
+
+// 			case KeywordSeparator:
+// 				endPos = i - 1
+// 				curToken = strings.TrimSpace(curToken)
+// 				tokenType := TokenTypeLiteral
+// 				if t.IsKeyword(curToken) {
+// 					tokenType = TokenTypeKeyword
+// 				}
+
+// 				tokens = append(tokens, &Token{
+// 					Type:     tokenType,
+// 					Value:    curToken,
+// 					StartPos: int64(startPos),
+// 					EndPos:   int64(endPos),
+// 				})
+
+// 				curToken = ""
+// 				inToken = false
+
+// 				tokens = append(tokens, &Token{})
+
+// 				continue
+
+// 			case KeywordClosingBracket:
+// 				continue
+// 			}
+
+// 		} else {
+
+// 		}
+
+// 		curToken += string(c)
+// 	}
+
+// 	return tokens, nil
+// }
+
+func (t *Tokenizer) IsKeyword(literal string) bool {
+	switch literal {
+	case KeywordAll, KeywordAnd, KeywordBetween, KeywordCheck, KeywordCount, KeywordData,
+		KeywordDelete, KeywordHas, KeywordIn, KeywordInsert, KeywordNode, KeywordOut, KeywordPath, KeywordRelation, KeywordRelations,
+		KeywordRestore, KeywordSelect, KeywordUpdate, KeywordWith:
+		return true
+	default:
+		return false
+	}
+}
+
+func (t *Tokenizer) addLiteralOrKeyword(tokens *[]*Token, val string, start, end int) {
+	val = strings.TrimSpace(val)
+	if val == "" {
+		return
+	}
+
+	tokenType := TokenTypeLiteral
+	if t.IsKeyword(val) {
+		tokenType = TokenTypeKeyword
+	}
+
+	*tokens = append(*tokens, &Token{
+		Type:     tokenType,
+		Value:    val,
+		StartPos: int64(start),
+		EndPos:   int64(end),
+	})
 }

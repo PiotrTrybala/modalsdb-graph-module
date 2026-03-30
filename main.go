@@ -7,15 +7,20 @@ import (
 )
 
 func main() {
-	q := "SELECT RELATIONS IN [john, alice];"
+	queries := []string{
+		"SELECT RELATIONS IN [john, alice];",
+		"INSERT pizza<->[:has,:on_top]<->cheese;",
+	}
 
 	tokenizer := query.NewTokenizer()
 
-	parsed, err := tokenizer.Tokenize(q)
-	if err != nil {
-		fmt.Println(err)
-	}
+	for _, query := range queries {
+		parsed, err := tokenizer.Tokenize(query)
+		if err != nil {
+			fmt.Println(err)
+		}
 
-	fmt.Println("parsed:", parsed)
+		fmt.Println("parsed:", query, "\n", parsed)
+	}
 
 }
