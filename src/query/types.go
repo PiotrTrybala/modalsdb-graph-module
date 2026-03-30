@@ -44,8 +44,8 @@ func ToQueryType(_type string) (queryType QueryType, err error) {
 }
 
 type Query struct {
-	Type QueryType
-	Data any
+	Type     QueryType
+	Metadata any
 }
 
 type DirectionType int
@@ -76,40 +76,91 @@ func ToDirectionType(direction string) (directionType DirectionType, err error) 
 
 type SelectQuery struct {
 	Direction DirectionType
-	NodesIds  []string
+	Ids       []string
 }
 
-func (q SelectQuery) String() string {
-	return fmt.Sprintf(`direction = %d,nodesIds = %v
-	`, q.Direction, q.NodesIds)
-}
-
-type InsertNodeQuery struct {
-	Name string
-}
-
-type InsertRelationQuery struct {
-	From      string
-	Relations []string // max two relations from->to and to->from
-	To        string
-}
-
-type CountQuery struct {
-	Direction DirectionType
-	Name      string
-}
-
-type CheckAction int
+type InsertQueryType int
 
 const (
-	CheckActionAnd CheckAction = iota
-	CheckActionBetween
-	CheckActionNone
+	InsertQueryNode InsertQueryType = iota
+	InsertQueryRelation
+)
+
+type InsertQuery struct {
+	Type InsertQueryType
+
+	NodeId string
+
+	RelationFrom string
+	Relations    []string
+	RelationTo   string
+}
+
+type UpdateQueryType int
+
+const (
+	UpdateQueryData UpdateQueryType = iota
+	UpdateQueryRelation
+)
+
+type UpdateQueryRelationType int
+
+const (
+	UpdateQueryRelationOneWay UpdateQueryRelationType = iota
+	UpdateQueryRelationTwoWay
+)
+
+type UpdateQuery struct {
+	Type UpdateQueryType
+
+	NodeData string
+
+	RelationType UpdateQueryRelationType
+	RelationFrom string
+	RelationTo   string
+	RelationData string
+}
+
+type DeleteQueryType int
+
+const (
+	DeleteQueryRelation DeleteQueryType = iota
+	DeleteQueryNode
+)
+
+type DeleteQuery struct {
+	Type DeleteQueryType
+
+	NodeId string
+
+	RelationFrom string
+	RelationTo   string
+}
+
+type CheckQueryType int
+
+const (
+	CheckQueryRelation CheckQueryType = iota
+	CheckQueryPath
+	CheckQueryContainRelation
 )
 
 type CheckQuery struct {
-	Source       string
-	Destination  string
-	Action       CheckAction
-	HasRelations []string
+	Type CheckQueryType
+
+	Source      string
+	Destination string
+
+	Relations []string
+}
+
+type CountQueryType int
+
+const (
+	CountQueryNodes CountQueryType = iota
+)
+
+type CountQuery struct {
+	Direction DirectionType
+	NodeId    string
 }
